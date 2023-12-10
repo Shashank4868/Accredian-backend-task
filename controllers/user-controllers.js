@@ -1,16 +1,19 @@
 const HttpError = require("../models/http-error");
 const { validationResult } = require("express-validator");
 
+const dotenv = require("dotenv").config();
+// dotenv.config();
+
 const bcrypt = require("bcryptjs");
 
 const mysql = require("mysql2");
 
 const pool = mysql
   .createPool({
-    host: "localhost",
-    user: "root",
-    password: "admin",
-    database: "accredian_task",
+    host: process.env.MYSQL_HOST,
+    user: process.env.MYSQL_USER,
+    password: process.env.MYSQL_PASSWORD,
+    database: process.env.MYSQL_DB,
   })
   .promise();
 
@@ -27,7 +30,7 @@ const signUp = async (req, res, next) => {
 
   try {
     existingUser = await pool.query(
-      "SELECT * FROM user_data WHERE email = ? or username = ?",
+      `SELECT * FROM user_data WHERE email = ? or username = ?`,
       [email, username]
     );
   } catch (err) {
@@ -56,7 +59,7 @@ const signUp = async (req, res, next) => {
     }
     try {
       await pool.query(
-        "INSERT INTO user_data (username, email, password) VALUES (?, ?, ?)",
+        `INSERT INTO user_data (username, email, password) VALUES (?, ?, ?)`,
         [username, email, hashedPassword]
       );
     } catch (err) {
@@ -81,7 +84,7 @@ const logIn = async (req, res, next) => {
   let result;
   try {
     const [user] = await pool.query(
-      "SELECT * FROM user_data WHERE email = ? or username = ?",
+      `SELECT * FROM user_data WHERE email = ? or username = ?`,
       [usernameOrEmail, usernameOrEmail]
     );
     result = user;
